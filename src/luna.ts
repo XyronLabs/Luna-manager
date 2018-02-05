@@ -15,9 +15,9 @@ export namespace LunaManager {
 
     export function checkForUpdates(path: string, force?: boolean): void {
         Logger.println("Luna is checking for updates, please wait...");
-        let currentVersion = LunaManager.checkCurrentBinariesVersion(path);
+        let currentVersion = checkCurrentBinariesVersion(path);
         
-        LunaManager.checkRemoteBinariesVersion((remoteVersion: string) => {
+        checkRemoteBinariesVersion((remoteVersion: string) => {
             Logger.println("Current version: " + currentVersion);
             Logger.println("Remote version: " + remoteVersion);
     
@@ -27,7 +27,7 @@ export namespace LunaManager {
             }
     
             if (!currentVersion || currentVersion < remoteVersion || force)
-                LunaManager.updateBinaries(path, remoteVersion);
+                updateBinaries(path, remoteVersion);
             else
                 Logger.println('Luna is up to date!\n');
 
