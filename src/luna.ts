@@ -126,7 +126,7 @@ export namespace LunaManager {
             let extensions = checkFolderForExtensions(path);
             
             extensions.forEach(e => {
-                let extensionData: LunaExtension = require(getExtensionData(e));
+                let extensionData: LunaExtension = require(getExtensionData(path, e));
                 
                 request.get({url: baseUrl + e + "/extension.json"}, (err, response, body) => {
                     let remoteData: LunaExtension = JSON.parse(body);
@@ -142,9 +142,9 @@ export namespace LunaManager {
         function checkFolderForExtensions(path: string, folder: string = "", extensionList: string[] = []) {
             if (!fs.existsSync(path + extensionFolder + folder)) return [];
     
-            let folders = fs.readdirSync(extensionFolder + folder);
+            let folders = fs.readdirSync(path + extensionFolder + folder);
             folders.forEach(f => {
-                if (fs.existsSync(getExtensionData(folder + "/" + f))) {
+                if (fs.existsSync(getExtensionData(path, folder + "/" + f))) {
                     extensionList.push(folder + "/" + f);
                 } else {
                     return checkFolderForExtensions(path, folder + "/" + f, extensionList);
@@ -154,8 +154,8 @@ export namespace LunaManager {
             return extensionList;
         }
 
-        function getExtensionData(packageName: string): string {
-            return extensionFolder + packageName + "/extension.json";
+        function getExtensionData(path: string, packageName: string): string {
+            return path + extensionFolder + packageName + "/extension.json";
         }
     }
 
