@@ -24,7 +24,12 @@ var LunaManager;
     }
     LunaManager.checkForUpdates = checkForUpdates;
     function checkCurrentBinariesVersion() {
-        return "";
+        if (fs.existsSync(process.cwd() + '/bin/luna.json')) {
+            return require(process.cwd() + '/bin/luna.json').version;
+        }
+        else {
+            return undefined;
+        }
     }
     LunaManager.checkCurrentBinariesVersion = checkCurrentBinariesVersion;
     function checkRemoteBinariesVersion(_callback) {
@@ -51,7 +56,17 @@ var LunaManager;
                     else {
                         fs.unlinkSync(process.cwd() + "/luna.zip");
                         Logger_1.default.println("Luna was successfully updated!\n");
-                        // vscode.workspace.getConfiguration('luna').update('version', remoteVersion, vscode.ConfigurationTarget.Workspace);
+                        if (fs.existsSync(process.cwd() + '/bin/luna.json')) {
+                            let l = require(process.cwd() + '/bin/luna.json');
+                            l.version = remoteVersion;
+                            fs.writeFileSync(process.cwd() + '/bin/luna.json', JSON.stringify(l), err => {
+                                if (err)
+                                    console.error(err);
+                            });
+                        }
+                        else {
+                            fs.appendFileSync(process.cwd() + '/bin/luna.json', JSON.stringify({ version: remoteVersion }));
+                        }
                     }
                 });
             }
