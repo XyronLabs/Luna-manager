@@ -1,2 +1,6 @@
 "use strict";
-console.log("Hello world!");
+Object.defineProperty(exports, "__esModule", { value: true });
+const luna_1 = require("./luna");
+luna_1.LunaManager.checkRemoteBinariesVersion((version) => {
+    console.log("Luna latest version: " + version);
+});
