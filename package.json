@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/XyronLabs/Luna-manager#readme",
   "devDependencies": {
+    "@types/extract-zip": "^1.6.2",
     "@types/node": "^9.4.0",
     "@types/request": "^2.47.0",
     "typescript": "^2.7.1"
