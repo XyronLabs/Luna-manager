@@ -41,7 +41,7 @@ export namespace LunaManager {
     }
 
     export function updateBinaries(remoteVersion: string): void {
-        Logger.println("Installing Luna " + remoteVersion + " to this folder: " + __dirname);
+        Logger.println("Installing Luna " + remoteVersion + " to this folder: " + process.cwd());
         Logger.println("Please wait until this process is finished...")
         
         let url = 'https://github.com/XyronLabs/Luna/releases/download/' + remoteVersion + '/luna-' + remoteVersion + '_standalone_' + process.platform + '.zip';
@@ -50,7 +50,7 @@ export namespace LunaManager {
             if (err) {
                 Logger.println(err);
             } else {
-                fs.writeFileSync(__dirname + "/luna.zip", body, 'binary');
+                fs.writeFileSync(process.cwd() + "/luna.zip", body, 'binary');
 
                 extract_zip(process.cwd() + "/luna.zip", {dir: process.cwd() + "/bin"}, (err: Error | undefined) => {
                     if (err) {

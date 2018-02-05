@@ -39,7 +39,7 @@ var LunaManager;
     }
     LunaManager.checkRemoteBinariesVersion = checkRemoteBinariesVersion;
     function updateBinaries(remoteVersion) {
-        Logger_1.default.println("Installing Luna " + remoteVersion + " to this folder: " + __dirname);
+        Logger_1.default.println("Installing Luna " + remoteVersion + " to this folder: " + process.cwd());
         Logger_1.default.println("Please wait until this process is finished...");
         let url = 'https://github.com/XyronLabs/Luna/releases/download/' + remoteVersion + '/luna-' + remoteVersion + '_standalone_' + process.platform + '.zip';
         console.log(url);
@@ -48,7 +48,7 @@ var LunaManager;
                 Logger_1.default.println(err);
             }
             else {
-                fs.writeFileSync(__dirname + "/luna.zip", body, 'binary');
+                fs.writeFileSync(process.cwd() + "/luna.zip", body, 'binary');
                 extract_zip(process.cwd() + "/luna.zip", { dir: process.cwd() + "/bin" }, (err) => {
                     if (err) {
                         Logger_1.default.println("Could not update Luna to version " + remoteVersion + "\n");
