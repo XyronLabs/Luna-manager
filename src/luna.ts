@@ -5,15 +5,15 @@ import Logger from './Logger'
 
 export namespace LunaManager {
 
-    export function newProject(): void {
-        fs.appendFile(process.cwd + '/main.luna','', err => {
+    export function newProject(path: string): void {
+        fs.appendFile(path + '/main.luna','', err => {
             if (err) console.error(err)
         });
     }
 
-    export function checkForUpdates(force?: boolean, autoHide?: boolean): void {
+    export function checkForUpdates(path: string, force?: boolean): void {
         Logger.println("Luna is checking for updates, please wait...");
-        let currentVersion = LunaManager.checkCurrentBinariesVersion();
+        let currentVersion = LunaManager.checkCurrentBinariesVersion(path);
         
         LunaManager.checkRemoteBinariesVersion((remoteVersion: string) => {
             Logger.println("Current version: " + currentVersion);
@@ -25,16 +25,16 @@ export namespace LunaManager {
             }
     
             if (!currentVersion || currentVersion < remoteVersion || force)
-                LunaManager.updateBinaries(remoteVersion);
+                LunaManager.updateBinaries(path, remoteVersion);
             else
                 Logger.println('Luna is up to date!\n');
 
         });
     }
 
-    export function checkCurrentBinariesVersion(): (string| undefined) {
-        if (fs.existsSync(process.cwd() + '/bin/luna.json')) {
-            return require(process.cwd() + '/bin/luna.json').version
+    export function checkCurrentBinariesVersion(path: string): (string| undefined) {
+        if (fs.existsSync(path + '/bin/luna.json')) {
+            return require(path + '/bin/luna.json').version
         } else {
             return undefined;
         }
@@ -46,8 +46,8 @@ export namespace LunaManager {
         });
     }
 
-    export function updateBinaries(remoteVersion: string): void {
-        Logger.println("Installing Luna " + remoteVersion + " to this folder: " + process.cwd());
+    export function updateBinaries(path: string, remoteVersion: string): void {
+        Logger.println("Installing Luna " + remoteVersion + " to this folder: " + path);
         Logger.println("Please wait until this process is finished...")
         
         let url = 'https://github.com/XyronLabs/Luna/releases/download/' + remoteVersion + '/luna-' + remoteVersion + '_standalone_' + process.platform + '.zip';
@@ -56,20 +56,20 @@ export namespace LunaManager {
             if (err) {
                 Logger.println(err);
             } else {
-                fs.writeFileSync(process.cwd() + "/luna.zip", body, 'binary');
+                fs.writeFileSync(path + "/luna.zip", body, 'binary');
 
-                extract_zip(process.cwd() + "/luna.zip", {dir: process.cwd() + "/bin"}, (err: Error | undefined) => {
+                extract_zip(path + "/luna.zip", {dir: path + "/bin"}, (err: Error | undefined) => {
                     if (err) {
                         Logger.println("Could not update Luna to version " + remoteVersion + "\n");
                     } else {
-                        fs.unlinkSync(process.cwd() + "/luna.zip");
+                        fs.unlinkSync(path + "/luna.zip");
                         Logger.println("Luna was successfully updated!\n");
-                        if (fs.existsSync(process.cwd() + '/bin/luna.json')) {
-                            let l = require(process.cwd() + '/bin/luna.json')
+                        if (fs.existsSync(path + '/bin/luna.json')) {
+                            let l = require(path + '/bin/luna.json')
                             l.version = remoteVersion
-                            fs.writeFileSync(process.cwd() + '/bin/luna.json', JSON.stringify(l))
+                            fs.writeFileSync(path + '/bin/luna.json', JSON.stringify(l))
                         } else {
-                            fs.appendFileSync(process.cwd() + '/bin/luna.json', JSON.stringify({version:remoteVersion}))
+                            fs.appendFileSync(path + '/bin/luna.json', JSON.stringify({version:remoteVersion}))
                         }
                     }
                 });
