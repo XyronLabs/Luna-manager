@@ -5,6 +5,12 @@ import Logger from './Logger'
 
 export namespace LunaManager {
 
+    export function newProject(): void {
+        fs.appendFile(process.cwd + '/main.luna','', err => {
+            if (err) console.error(err)
+        });
+    }
+
     export function checkForUpdates(force?: boolean, autoHide?: boolean): void {
         Logger.println("Luna is checking for updates, please wait...");
         let currentVersion = LunaManager.checkCurrentBinariesVersion();
@@ -45,7 +51,7 @@ export namespace LunaManager {
         Logger.println("Please wait until this process is finished...")
         
         let url = 'https://github.com/XyronLabs/Luna/releases/download/' + remoteVersion + '/luna-' + remoteVersion + '_standalone_' + process.platform + '.zip';
-        console.log(url)
+        
         request.get({url: url, encoding: 'binary'}, (err, response, body) => {
             if (err) {
                 Logger.println(err);
@@ -61,11 +67,9 @@ export namespace LunaManager {
                         if (fs.existsSync(process.cwd() + '/bin/luna.json')) {
                             let l = require(process.cwd() + '/bin/luna.json')
                             l.version = remoteVersion
-                            fs.writeFileSync(process.cwd() + '/bin/luna.json', JSON.stringify(l), err => {
-                                if (err) console.error(err)
-                            })
+                            fs.writeFileSync(process.cwd() + '/bin/luna.json', JSON.stringify(l))
                         } else {
-                            fs.appendFileSync(process.cwd() + '/bin/luna.json',JSON.stringify({version:remoteVersion}))
+                            fs.appendFileSync(process.cwd() + '/bin/luna.json', JSON.stringify({version:remoteVersion}))
                         }
                     }
                 });

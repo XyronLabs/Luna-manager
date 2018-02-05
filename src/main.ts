@@ -10,6 +10,10 @@ switch(process.argv[2]) {
         LunaManager.checkForUpdates(true)
         break
 
+    case '--new':
+        LunaManager.newProject()
+        break
+
     default:
         console.log("No arguments!")
 }
