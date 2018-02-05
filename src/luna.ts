@@ -1,7 +1,9 @@
 import * as fs from 'fs'
 import * as request from 'request'
 import * as extract_zip from 'extract-zip'
+
 import Logger from './Logger'
+import LunaExtension from './LunaExtension'
 
 export namespace LunaManager {
 
@@ -75,6 +77,48 @@ export namespace LunaManager {
                 });
             }
         });
+    }
+
+    export namespace Extensions {
+        export const baseUrl = "https://raw.githubusercontent.com/XyronLabs/Luna-extensions/master/";
+        export const extensionFolder = "/res/lua/extensions/";
+
+        export function updateExtension(path: string, packageName: string) {
+            request.get({url: baseUrl + packageName + "/extension.json"}, (err, response, body) => {
+                if (err) { Logger.println("Couldn't get extension data"); return; }
+                let obj: LunaExtension = JSON.parse(body);
+                
+                if (!obj.files) obj.files = [];
+                obj.files.push("init.lua");
+                obj.files.push("extension.json");
+    
+                if (obj.dependencies) {
+                    for (let d of obj.dependencies) {
+                        updateExtension(path, d);
+                    }
+                }
+    
+                let directoryTree = "";
+                for (let currDir of packageName.split('/')) {
+                    directoryTree += currDir + "/";
+                    
+                    if (!fs.existsSync(path + extensionFolder + directoryTree))
+                        fs.mkdirSync(path + extensionFolder + directoryTree);
+                }
+    
+                Logger.println("Installing " + obj.name + " " + obj.version);
+    
+                for(let f of obj.files) {
+                    request.get({url: baseUrl + packageName + "/" + f}, (err, response, body) => {
+                        if (err) { Logger.println("Couldn't download file: " + f); return; }
+                        fs.writeFileSync(path + extensionFolder + packageName + "/" + f, body);
+                    });
+                }
+                
+                Logger.println("Installed " + obj.name + " " + obj.version + " successfully!");
+            });
+
+        }
     }
 
 }

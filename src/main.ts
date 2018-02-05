@@ -14,6 +14,10 @@ switch(process.argv[2]) {
         LunaManager.newProject(process.cwd())
         break
 
+    case '--install-extension':
+        LunaManager.Extensions.updateExtension(process.cwd(), process.argv[3])
+        break
+
     default:
         console.log("No arguments!")
 }
