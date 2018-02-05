@@ -35,8 +35,8 @@ export namespace LunaManager {
     }
 
     export function checkCurrentBinariesVersion(path: string): (string| undefined) {
-        if (fs.existsSync(path + '/bin/luna.json')) {
-            return require(path + '/bin/luna.json').version
+        if (fs.existsSync(path + '/luna.json')) {
+            return require(path + '/luna.json').version
         } else {
             return undefined;
         }
@@ -60,18 +60,18 @@ export namespace LunaManager {
             } else {
                 fs.writeFileSync(path + "/luna.zip", body, 'binary');
 
-                extract_zip(path + "/luna.zip", {dir: path + "/bin"}, (err: Error | undefined) => {
+                extract_zip(path + "/luna.zip", {dir: path + ""}, (err: Error | undefined) => {
                     if (err) {
                         Logger.println("Could not update Luna to version " + remoteVersion + "\n");
                     } else {
                         fs.unlinkSync(path + "/luna.zip");
                         Logger.println("Luna was successfully updated!\n");
-                        if (fs.existsSync(path + '/bin/luna.json')) {
-                            let l = require(path + '/bin/luna.json')
+                        if (fs.existsSync(path + '/luna.json')) {
+                            let l = require(path + '/luna.json')
                             l.version = remoteVersion
-                            fs.writeFileSync(path + '/bin/luna.json', JSON.stringify(l))
+                            fs.writeFileSync(path + '/luna.json', JSON.stringify(l))
                         } else {
-                            fs.appendFileSync(path + '/bin/luna.json', JSON.stringify({version:remoteVersion}))
+                            fs.appendFileSync(path + '/luna.json', JSON.stringify({version:remoteVersion}))
                         }
                     }
                 });
