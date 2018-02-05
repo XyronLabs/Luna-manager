@@ -1,6 +1,6 @@
 {
   "name": "luna-manager",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Manager for Luna projects",
   "main": "out/main.js",
   "scripts": {
