@@ -11,6 +11,7 @@ export namespace LunaManager {
         fs.appendFile(path + '/main.luna','', err => {
             if (err) console.error(err)
         });
+        checkForUpdates(path, true)
     }
 
     export function checkForUpdates(path: string, force?: boolean): void {
@@ -118,6 +119,43 @@ export namespace LunaManager {
                 Logger.println("Installed " + obj.name + " " + obj.version + " successfully!");
             });
 
+        }
+
+        export function checkInstalledExtensions(path: string, force?: boolean) {
+            Logger.println("Checking for extension updates")
+            let extensions = checkFolderForExtensions();
+            
+            extensions.forEach(e => {
+                let extensionData: LunaExtension = require(getExtensionData(e));
+                
+                request.get({url: baseUrl + e + "/extension.json"}, (err, response, body) => {
+                    let remoteData: LunaExtension = JSON.parse(body);
+                    Logger.println(`Extension: ${extensionData.name}, local version = ${extensionData.version}, remote version = ${remoteData.version}`)
+    
+                    if (extensionData.version < remoteData.version || force) {
+                        updateExtension(path, e);
+                    }
+                });
+            });
+        }
+
+        function checkFolderForExtensions(folder: string = "", extensionList: string[] = []) {
+            if (!fs.existsSync(extensionFolder + folder)) return [];
+    
+            let folders = fs.readdirSync(extensionFolder + folder);
+            folders.forEach(f => {
+                if (fs.existsSync(getExtensionData(folder + "/" + f))) {
+                    extensionList.push(folder + "/" + f);
+                } else {
+                    return checkFolderForExtensions(folder + "/" + f, extensionList);
+                }
+            });
+    
+            return extensionList;
+        }
+
+        function getExtensionData(packageName: string): string {
+            return extensionFolder + packageName + "/extension.json";
         }
     }
 

@@ -14,8 +14,16 @@ switch(process.argv[2]) {
         LunaManager.newProject(process.cwd())
         break
 
-    case '--install-extension':
+    case '--extensions-install':
         LunaManager.Extensions.updateExtension(process.cwd(), process.argv[3])
+        break
+
+    case '--extensions-update':
+        LunaManager.Extensions.checkInstalledExtensions(process.cwd())
+        break
+
+    case '--extensions-update-force':
+        LunaManager.Extensions.checkInstalledExtensions(process.cwd(), true)
         break
 
     default:
