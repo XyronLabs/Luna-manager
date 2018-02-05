@@ -123,7 +123,7 @@ export namespace LunaManager {
 
         export function checkInstalledExtensions(path: string, force?: boolean) {
             Logger.println("Checking for extension updates")
-            let extensions = checkFolderForExtensions();
+            let extensions = checkFolderForExtensions(path);
             
             extensions.forEach(e => {
                 let extensionData: LunaExtension = require(getExtensionData(e));
@@ -139,15 +139,15 @@ export namespace LunaManager {
             });
         }
 
-        function checkFolderForExtensions(folder: string = "", extensionList: string[] = []) {
-            if (!fs.existsSync(extensionFolder + folder)) return [];
+        function checkFolderForExtensions(path: string, folder: string = "", extensionList: string[] = []) {
+            if (!fs.existsSync(path + extensionFolder + folder)) return [];
     
             let folders = fs.readdirSync(extensionFolder + folder);
             folders.forEach(f => {
                 if (fs.existsSync(getExtensionData(folder + "/" + f))) {
                     extensionList.push(folder + "/" + f);
                 } else {
-                    return checkFolderForExtensions(folder + "/" + f, extensionList);
+                    return checkFolderForExtensions(path, folder + "/" + f, extensionList);
                 }
             });
     
