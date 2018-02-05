@@ -41,17 +41,18 @@ export namespace LunaManager {
         Logger.println("Please wait until this process is finished...")
         
         let url = 'https://github.com/XyronLabs/Luna/releases/download/' + remoteVersion + '/luna-' + remoteVersion + '_standalone_' + process.platform + '.zip';
+        console.log(url)
         request.get({url: url, encoding: 'binary'}, (err, response, body) => {
             if (err) {
                 Logger.println(err);
             } else {
                 fs.writeFileSync(__dirname + "/luna.zip", body, 'binary');
 
-                extract_zip(__dirname + "/luna.zip", {dir: __dirname}, (err: string) => {
+                extract_zip(process.cwd() + "/luna.zip", {dir: process.cwd() + "/bin"}, (err: Error | undefined) => {
                     if (err) {
                         Logger.println("Could not update Luna to version " + remoteVersion + "\n");
                     } else {
-                        fs.unlinkSync(__dirname + "/luna.zip");
+                        fs.unlinkSync(process.cwd() + "/luna.zip");
                         Logger.println("Luna was successfully updated!\n");
                         // vscode.workspace.getConfiguration('luna').update('version', remoteVersion, vscode.ConfigurationTarget.Workspace);
                     }
