@@ -1,0 +1,27 @@
+{
+  "name": "luna-manager",
+  "version": "1.0.0",
+  "description": "Manager for Luna projects",
+  "main": "out/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/XyronLabs/Luna-manager.git"
+  },
+  "keywords": [
+    "manager",
+    "luna",
+    "game"
+  ],
+  "author": "ACharLuk",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/XyronLabs/Luna-manager/issues"
+  },
+  "homepage": "https://github.com/XyronLabs/Luna-manager#readme",
+  "devDependencies": {
+    "typescript": "^2.7.1"
+  }
+}
