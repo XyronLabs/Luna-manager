@@ -4,158 +4,152 @@ import * as extract_zip from 'extract-zip'
 
 import LunaExtension from './LunaExtension'
 
-export namespace LunaManager {
+export const baseUrl = "https://raw.githubusercontent.com/XyronLabs/Luna-extensions/master/";
+export const extensionFolder = "/res/lua/extensions/";
 
-    export function newProject(path: string, printfn: Function): void {
-        fs.appendFile(path + '/main.luna','', err => {
-            if (err) console.error(err)
-        });
-        checkForUpdates(path, printfn, true)
-    }
+export function newProject(path: string, printfn: Function): void {
+    fs.appendFile(path + '/main.luna','', err => {
+        if (err) console.error(err)
+    });
+    checkForUpdates(path, printfn, true)
+}
 
-    export function checkForUpdates(path: string, printfn: Function, force?: boolean): void {
-        printfn("Luna is checking for updates, please wait...");
-        let currentVersion = checkCurrentBinariesVersion(path);
-        
-        checkRemoteBinariesVersion((remoteVersion: string) => {
-            printfn("Current version: " + currentVersion);
-            printfn("Remote version: " + remoteVersion);
+export function checkForUpdates(path: string, printfn: Function, force?: boolean): void {
+    printfn("Luna is checking for updates, please wait...");
+    let currentVersion = checkCurrentBinariesVersion(path);
     
-            if (!remoteVersion) {
-                printfn("Error fetching the latest version!");
-                return;
-            }
-    
-            if (!currentVersion || currentVersion < remoteVersion || force)
-                updateBinaries(path, printfn, remoteVersion);
-            else
-                printfn('Luna is up to date!\n');
+    checkRemoteBinariesVersion((remoteVersion: string) => {
+        printfn("Current version: " + currentVersion);
+        printfn("Remote version: " + remoteVersion);
 
-        });
+        if (!remoteVersion) {
+            printfn("Error fetching the latest version!");
+            return;
+        }
+
+        if (!currentVersion || currentVersion < remoteVersion || force)
+            updateBinaries(path, printfn, remoteVersion);
+        else
+            printfn('Luna is up to date!\n');
+
+    });
+}
+
+export function checkCurrentBinariesVersion(path: string): (string| undefined) {
+    if (fs.existsSync(path + '/luna.json')) {
+        return require(path + '/luna.json').version
+    } else {
+        return undefined;
     }
+}
 
-    export function checkCurrentBinariesVersion(path: string): (string| undefined) {
-        if (fs.existsSync(path + '/luna.json')) {
-            return require(path + '/luna.json').version
+export function checkRemoteBinariesVersion(_callback: Function): void {
+    request.get({url: 'https://raw.githubusercontent.com/XyronLabs/Luna/master/build/vscode_version'}, (err, response, body) => {
+        _callback(body);
+    });
+}
+
+export function updateBinaries(path: string, printfn: Function, remoteVersion: string): void {
+    printfn("Installing Luna " + remoteVersion + " to this folder: " + path);
+    printfn("Please wait until this process is finished...")
+    
+    let url = 'https://github.com/XyronLabs/Luna/releases/download/' + remoteVersion + '/luna-' + remoteVersion + '_standalone_' + process.platform + '.zip';
+    
+    request.get({url: url, encoding: 'binary'}, (err, response, body) => {
+        if (err) {
+            printfn(err);
         } else {
-            return undefined;
-        }
-    }
+            fs.writeFileSync(path + "/luna.zip", body, 'binary');
 
-    export function checkRemoteBinariesVersion(_callback: Function): void {
-        request.get({url: 'https://raw.githubusercontent.com/XyronLabs/Luna/master/build/vscode_version'}, (err, response, body) => {
-            _callback(body);
-        });
-    }
-
-    export function updateBinaries(path: string, printfn: Function, remoteVersion: string): void {
-        printfn("Installing Luna " + remoteVersion + " to this folder: " + path);
-        printfn("Please wait until this process is finished...")
-        
-        let url = 'https://github.com/XyronLabs/Luna/releases/download/' + remoteVersion + '/luna-' + remoteVersion + '_standalone_' + process.platform + '.zip';
-        
-        request.get({url: url, encoding: 'binary'}, (err, response, body) => {
-            if (err) {
-                printfn(err);
-            } else {
-                fs.writeFileSync(path + "/luna.zip", body, 'binary');
-
-                extract_zip(path + "/luna.zip", {dir: path + ""}, (err: Error | undefined) => {
-                    if (err) {
-                        printfn("Could not update Luna to version " + remoteVersion + "\n");
+            extract_zip(path + "/luna.zip", {dir: path + ""}, (err: Error | undefined) => {
+                if (err) {
+                    printfn("Could not update Luna to version " + remoteVersion + "\n");
+                } else {
+                    fs.unlinkSync(path + "/luna.zip");
+                    printfn("Luna was successfully updated!\n");
+                    if (fs.existsSync(path + '/luna.json')) {
+                        let l = require(path + '/luna.json')
+                        l.version = remoteVersion
+                        fs.writeFileSync(path + '/luna.json', JSON.stringify(l))
                     } else {
-                        fs.unlinkSync(path + "/luna.zip");
-                        printfn("Luna was successfully updated!\n");
-                        if (fs.existsSync(path + '/luna.json')) {
-                            let l = require(path + '/luna.json')
-                            l.version = remoteVersion
-                            fs.writeFileSync(path + '/luna.json', JSON.stringify(l))
-                        } else {
-                            fs.appendFileSync(path + '/luna.json', JSON.stringify({version:remoteVersion}))
-                        }
+                        fs.appendFileSync(path + '/luna.json', JSON.stringify({version:remoteVersion}))
                     }
-                });
+                }
+            });
+        }
+    });
+}
+
+export function updateExtension(path: string, printfn: Function, packageName: string) {
+    request.get({url: baseUrl + packageName + "/extension.json"}, (err, response, body) => {
+        if (err) { printfn("Couldn't get extension data"); return; }
+        let obj: LunaExtension = JSON.parse(body);
+        
+        if (!obj.files) obj.files = [];
+        obj.files.push("init.lua");
+        obj.files.push("extension.json");
+
+        if (obj.dependencies) {
+            for (let d of obj.dependencies) {
+                updateExtension(path, printfn, d);
+            }
+        }
+
+        let directoryTree = "";
+        for (let currDir of packageName.split('/')) {
+            directoryTree += currDir + "/";
+            
+            if (!fs.existsSync(path + extensionFolder + directoryTree))
+                fs.mkdirSync(path + extensionFolder + directoryTree);
+        }
+
+        printfn("Installing " + obj.name + " " + obj.version);
+
+        for(let f of obj.files) {
+            request.get({url: baseUrl + packageName + "/" + f}, (err, response, body) => {
+                if (err) { printfn("Couldn't download file: " + f); return; }
+                fs.writeFileSync(path + extensionFolder + packageName + "/" + f, body);
+            });
+        }
+        
+        printfn("Installed " + obj.name + " " + obj.version + " successfully!");
+    });
+
+}
+
+export function checkInstalledExtensions(path: string, printfn: Function, force?: boolean) {
+    printfn("Checking for extension updates")
+    let extensions = checkFolderForExtensions(path);
+    
+    extensions.forEach(e => {
+        let extensionData: LunaExtension = require(getExtensionData(path, e));
+        
+        request.get({url: baseUrl + e + "/extension.json"}, (err, response, body) => {
+            let remoteData: LunaExtension = JSON.parse(body);
+            printfn(`Extension: ${extensionData.name}, local version = ${extensionData.version}, remote version = ${remoteData.version}`)
+
+            if (extensionData.version < remoteData.version || force) {
+                updateExtension(path, printfn, e);
             }
         });
-    }
+    });
+}
 
-    export namespace Extensions {
-        export const baseUrl = "https://raw.githubusercontent.com/XyronLabs/Luna-extensions/master/";
-        export const extensionFolder = "/res/lua/extensions/";
+function checkFolderForExtensions(path: string, folder: string = "", extensionList: string[] = []) {
+    if (!fs.existsSync(path + extensionFolder + folder)) return [];
 
-        export function updateExtension(path: string, printfn: Function, packageName: string) {
-            request.get({url: baseUrl + packageName + "/extension.json"}, (err, response, body) => {
-                if (err) { printfn("Couldn't get extension data"); return; }
-                let obj: LunaExtension = JSON.parse(body);
-                
-                if (!obj.files) obj.files = [];
-                obj.files.push("init.lua");
-                obj.files.push("extension.json");
-    
-                if (obj.dependencies) {
-                    for (let d of obj.dependencies) {
-                        updateExtension(path, printfn, d);
-                    }
-                }
-    
-                let directoryTree = "";
-                for (let currDir of packageName.split('/')) {
-                    directoryTree += currDir + "/";
-                    
-                    if (!fs.existsSync(path + extensionFolder + directoryTree))
-                        fs.mkdirSync(path + extensionFolder + directoryTree);
-                }
-    
-                printfn("Installing " + obj.name + " " + obj.version);
-    
-                for(let f of obj.files) {
-                    request.get({url: baseUrl + packageName + "/" + f}, (err, response, body) => {
-                        if (err) { printfn("Couldn't download file: " + f); return; }
-                        fs.writeFileSync(path + extensionFolder + packageName + "/" + f, body);
-                    });
-                }
-                
-                printfn("Installed " + obj.name + " " + obj.version + " successfully!");
-            });
-
+    let folders = fs.readdirSync(path + extensionFolder + folder);
+    folders.forEach(f => {
+        if (fs.existsSync(getExtensionData(path, folder + "/" + f))) {
+            extensionList.push(folder + "/" + f);
+        } else {
+            return checkFolderForExtensions(path, folder + "/" + f, extensionList);
         }
+    });
 
-        export function checkInstalledExtensions(path: string, printfn: Function, force?: boolean) {
-            printfn("Checking for extension updates")
-            let extensions = checkFolderForExtensions(path);
-            
-            extensions.forEach(e => {
-                let extensionData: LunaExtension = require(getExtensionData(path, e));
-                
-                request.get({url: baseUrl + e + "/extension.json"}, (err, response, body) => {
-                    let remoteData: LunaExtension = JSON.parse(body);
-                    printfn(`Extension: ${extensionData.name}, local version = ${extensionData.version}, remote version = ${remoteData.version}`)
-    
-                    if (extensionData.version < remoteData.version || force) {
-                        updateExtension(path, printfn, e);
-                    }
-                });
-            });
-        }
+    return extensionList;
+}
 
-        function checkFolderForExtensions(path: string, folder: string = "", extensionList: string[] = []) {
-            if (!fs.existsSync(path + extensionFolder + folder)) return [];
-    
-            let folders = fs.readdirSync(path + extensionFolder + folder);
-            folders.forEach(f => {
-                if (fs.existsSync(getExtensionData(path, folder + "/" + f))) {
-                    extensionList.push(folder + "/" + f);
-                } else {
-                    return checkFolderForExtensions(path, folder + "/" + f, extensionList);
-                }
-            });
-    
-            return extensionList;
-        }
-
-        function getExtensionData(path: string, packageName: string): string {
-            return path + extensionFolder + packageName + "/extension.json";
-        }
-    }
-
+function getExtensionData(path: string, packageName: string): string {
+    return path + extensionFolder + packageName + "/extension.json";
 }
