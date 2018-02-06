@@ -1,8 +1,8 @@
 {
   "name": "luna-manager",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Manager for Luna projects",
-  "main": "out/main.js",
+  "main": "out/luna.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
