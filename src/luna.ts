@@ -132,7 +132,7 @@ export function checkInstalledExtensions(path: string, printfn: Function, force?
     });
 }
 
-function checkFolderForExtensions(path: string, folder: string = "", extensionList: string[] = []) {
+export function checkFolderForExtensions(path: string, folder: string = "", extensionList: string[] = []) {
     if (!fs.existsSync(path + extensionFolder + folder)) return [];
 
     let folders = fs.readdirSync(path + extensionFolder + folder);
@@ -147,6 +147,6 @@ function checkFolderForExtensions(path: string, folder: string = "", extensionLi
     return extensionList;
 }
 
-function getExtensionData(path: string, packageName: string): string {
+export function getExtensionData(path: string, packageName: string): string {
     return path + extensionFolder + packageName + "/extension.json";
 }
