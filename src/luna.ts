@@ -8,9 +8,6 @@ export const baseUrl = "https://raw.githubusercontent.com/XyronLabs/Luna-extensi
 export const extensionFolder = "/res/lua/extensions/";
 
 export function newProject(path: string, printfn: Function): void {
-    fs.appendFile(path + '/main.luna','', err => {
-        if (err) console.error(err)
-    });
     checkForUpdates(path, printfn, true)
 }
 
