@@ -151,15 +151,17 @@ export function getExtensionData(path: string, packageName: string): string {
     return path + extensionFolder + packageName + "/extension.json";
 }
 
-export function removeExtension(path: string, printfn: Function, packageName: string, extensionsData: LunaExtension[], errCallback: Function): void {
+export function removeExtension(path: string, printfn: Function, selected: LunaExtension, extensionsData: LunaExtension[], errCallback: Function): void {
+    let packageName = selected.path
     // Check if an installed extension depends on this one
     let ableToRemove = true
     extensionsData.forEach(element => {
         if (element.dependencies) {
             element.dependencies.forEach(d => {
                 if (d == packageName) {
-                    errCallback(`Can't remove ${path} extension, ${element.name} depends on this extension`) 
-                    ableToRemove = false;
+                    errCallback(`Can't remove ${selected.name} [${selected.version}] extension, ${element.name} [${element.version}] depends on this extension`) 
+                    ableToRemove = false
+                    return
                 }
             });
         }
