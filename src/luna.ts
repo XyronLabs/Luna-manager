@@ -167,16 +167,16 @@ export function removeExtension(path: string, printfn: Function, packageName: st
 
     if (ableToRemove) {
         for (let file of fs.readdirSync(extensionFolder + packageName))
-        fs.unlinkSync(extensionFolder + packageName + "/" + file);
-        fs.rmdirSync(extensionFolder + packageName);
+        fs.unlinkSync(path + extensionFolder + packageName + "/" + file);
+        fs.rmdirSync(path + extensionFolder + packageName);
         printfn("Removed extension: " + packageName);
         
         let f = packageName.split('/');
         
         if (f.length > 2) {
-            let rootFolder = fs.readdirSync(extensionFolder + f[1]);
+            let rootFolder = fs.readdirSync(path + extensionFolder + f[1]);
             if (rootFolder.length == 0)
-            fs.rmdirSync(extensionFolder + f[1]);
+            fs.rmdirSync(path + extensionFolder + f[1]);
         }
     }
 }
