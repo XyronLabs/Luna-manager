@@ -150,3 +150,33 @@ export function checkFolderForExtensions(path: string, folder: string = "", exte
 export function getExtensionData(path: string, packageName: string): string {
     return path + extensionFolder + packageName + "/extension.json";
 }
+
+export function removeExtension(path: string, printfn: Function, packageName: string, extensionsData: LunaExtension[], errCallback: Function): void {
+    // Check if an installed extension depends on this one
+    let ableToRemove = true
+    extensionsData.forEach(element => {
+        if (element.dependencies) {
+            element.dependencies.forEach(d => {
+                if (d == packageName) {
+                    errCallback(`Can't remove ${path} extension, ${element.name} depends on this extension`) 
+                    ableToRemove = false;
+                }
+            });
+        }
+    });
+
+    if (ableToRemove) {
+        for (let file of fs.readdirSync(extensionFolder + packageName))
+        fs.unlinkSync(extensionFolder + packageName + "/" + file);
+        fs.rmdirSync(extensionFolder + packageName);
+        printfn("Removed extension: " + packageName);
+        
+        let f = packageName.split('/');
+        
+        if (f.length > 2) {
+            let rootFolder = fs.readdirSync(extensionFolder + f[1]);
+            if (rootFolder.length == 0)
+            fs.rmdirSync(extensionFolder + f[1]);
+        }
+    }
+}
