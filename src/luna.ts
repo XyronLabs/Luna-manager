@@ -166,7 +166,7 @@ export function removeExtension(path: string, printfn: Function, packageName: st
     });
 
     if (ableToRemove) {
-        for (let file of fs.readdirSync(extensionFolder + packageName))
+        for (let file of fs.readdirSync(path + extensionFolder + packageName))
         fs.unlinkSync(path + extensionFolder + packageName + "/" + file);
         fs.rmdirSync(path + extensionFolder + packageName);
         printfn("Removed extension: " + packageName);
