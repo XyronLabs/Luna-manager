@@ -2,7 +2,14 @@ import * as fs from 'fs'
 import * as request from 'request'
 import * as extract_zip from 'extract-zip'
 
-import LunaExtension from './LunaExtension'
+export interface LunaExtension {
+    name: string;
+    description: string;
+    version: string;
+    path: string;
+    dependencies?: string[];
+    files?: string[];
+}
 
 export const baseUrl = "https://raw.githubusercontent.com/XyronLabs/Luna-extensions/master/";
 export const extensionFolder = "/res/lua/extensions/";
@@ -181,4 +188,22 @@ export function removeExtension(path: string, printfn: Function, selected: LunaE
             fs.rmdirSync(path + extensionFolder + f[1]);
         }
     }
+}
+
+export function getRemoteAvaliableExtensions() {
+    let extensionsData: LunaExtension[] = []
+
+    request.get({url: baseUrl + 'luna_extensions.json'}, (err, res, body) => {
+        let extensionPaths: string[] = JSON.parse(body)
+        extensionPaths.forEach(path => {
+
+            request.get({url: baseUrl + path + "/extension.json"}, (err, res, body) => {
+                extensionsData.push(JSON.parse(body))
+                if (extensionPaths[extensionPaths.length-1] == path) {
+                    return extensionsData
+                }
+            })
+
+        })
+    })
 }
