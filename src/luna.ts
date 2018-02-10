@@ -190,7 +190,7 @@ export function removeExtension(path: string, printfn: Function, selected: LunaE
     }
 }
 
-export function getRemoteAvaliableExtensions() {
+export function getRemoteAvaliableExtensions(_callback: Function) {
     let extensionsData: LunaExtension[] = []
 
     request.get({url: baseUrl + 'luna_extensions.json'}, (err, res, body) => {
@@ -199,8 +199,9 @@ export function getRemoteAvaliableExtensions() {
 
             request.get({url: baseUrl + path + "/extension.json"}, (err, res, body) => {
                 extensionsData.push(JSON.parse(body))
+                console.log
                 if (extensionPaths[extensionPaths.length-1] == path) {
-                    return extensionsData
+                    _callback(extensionsData)
                 }
             })
 
