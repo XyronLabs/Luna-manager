@@ -199,9 +199,8 @@ export function getRemoteAvaliableExtensions(_callback: Function) {
 
             request.get({url: baseUrl + path + "/extension.json"}, (err, res, body) => {
                 extensionsData.push(JSON.parse(body))
-                if (extensionPaths[extensionPaths.length-1] == path) {
-                    // Wait for all extensions json to be downloaded
-                    setTimeout(() => _callback(extensionsData), 3)
+                if (extensionsData.length == extensionPaths.length) {
+                    _callback(extensionsData)
                 }
             })
 
