@@ -48,7 +48,7 @@ export function checkCurrentBinariesVersion(path: string): (string| undefined) {
 }
 
 export function checkRemoteBinariesVersion(_callback: Function): void {
-    request.get({url: 'https://raw.githubusercontent.com/XyronLabs/Luna/master/build/vscode_version'}, (err, response, body) => {
+    request.get({url: 'https://raw.githubusercontent.com/XyronLabs/Luna/master/resources/build/vscode_version'}, (err, response, body) => {
         _callback(body);
     });
 }
